@@ -85,7 +85,7 @@ package_protobuf-git(){
 }
 
 package_python-protobuf-git(){
-  pkgdesc='Python 3 bindings for Google Protocol Buffers'
+  pkgdesc='Python 3 bindings for Google Protocol Buffers (git version)'
   depends=('python' 'python-six' 'protobuf')
   conflicts=('python-protobuf')
   provides=('python-protobuf')
