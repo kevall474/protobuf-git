@@ -1,0 +1,105 @@
+#_                   _ _ _  _ _____ _  _
+#| | _______   ____ _| | | || |___  | || |
+#| |/ / _ \ \ / / _` | | | || |_ / /| || |_
+#|   <  __/\ V / (_| | | |__   _/ / |__   _|
+#|_|\_\___| \_/ \__,_|_|_|  |_|/_/     |_|
+
+#Maintainer: kevall474 <kevall474@tuta.io> <https://github.com/kevall474>
+#Credits: Lukas Fleischer <lfleischer@archlinux.org>
+#Credits: David Runge <dvzrv@archlinux.org>
+#Credits: Aleksey Filippov <sarum9in@gmail.com>
+#Credits: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+#Credits: Sven-Hendrik Haase <sh@lutzhaase.com>
+#Credits: Thomas S Hatch <thatch45@gmail.com>
+#Credits: Geoffroy Carrier <geoffroy@archlinux.org>
+#Credits: Daniel J Griffiths <ghost1227@archlinux.us>
+
+#######################################
+
+#Set compiler to build spirv package
+#Set '1' to build with GCC
+#Set '2' to build with CLANG
+#Default is empty. It will build with GCC. To build with different compiler just use : env _compiler=(1 or 2) makepkg -s
+if [ -z ${_compiler+x} ]; then
+  _compiler=
+fi
+
+#######################################
+
+pkgbase=protobuf-git
+pkgname=('protobuf-git' 'python-protobuf-git')
+pkgver=3.15.8.2021_04_20.8126.0fd835893
+pkgrel=1
+arch=('x86_64')
+url='https://developers.google.com/protocol-buffers/'
+license=('BSD')
+makedepends=('unzip' 'python-setuptools' 'python' 'make' 'git' 'clang' 'gcc' 'gcc-libs' 'llvm' 'llvm-libs')
+source=('protobuf::git+https://github.com/protocolbuffers/protobuf.git')
+md5sums=('SKIP')
+
+pkgver(){
+ cd protobuf
+ echo 3.15.8.$(date -I | sed 's/-/_/' | sed 's/-/_/').$(git rev-list --count HEAD).$(git rev-parse --short HEAD)
+}
+
+build() {
+if [[ $_compiler = "1" ]]; then
+  export CC="gcc"
+  export CXX="g++"
+elif [[ $_compiler = "2" ]]; then
+  export CC="clang"
+  export CXX="clang++"
+else
+  export CC="gcc"
+  export CXX="g++"
+fi
+
+  cd "${srcdir}"/protobuf
+
+  ./autogen.sh
+
+  ./configure CFLAGS=-m64 CXXFLAGS=-m64 LDFLAGS=-m64 --prefix=/usr --libdir=/usr/lib
+
+  make -j$(nproc)
+
+  cd python
+  python setup.py build --cpp_implementation
+}
+
+package_protobuf-git(){
+  pkgdesc="Protocol Buffers - Google's data interchange format (git version)"
+  depends=('gcc-libs' 'glibc' 'zlib')
+  replaces=('protobuf-cpp')
+  conflicts=('protobuf')
+  provides=('libprotoc.so' 'libprotobuf.so' 'libprotobuf-lite.so' 'protobuf')
+
+  cd "${srcdir}"/protobuf
+
+  make DESTDIR="$pkgdir" install
+
+  install -vDm 644 editors/protobuf-mode.el -t "$pkgdir/usr/share/emacs/site-lisp/"
+  install -vDm 644 editors/proto.vim -t "${pkgdir}/usr/share/vim/vimfiles/syntax"
+
+  # install licence
+  install -Dm644 "${srcdir}"/protobuf/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
+
+package_python-protobuf-git(){
+  pkgdesc='Python 3 bindings for Google Protocol Buffers'
+  depends=('python' 'python-six' 'protobuf')
+  conflicts=('python-protobuf')
+  provides=('python-protobuf')
+
+  local python_version=$(python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+  cd "${srcdir}"/protobuf
+  (
+    cd python
+    PYTHONPATH="$PWD/build/lib.linux-$CARCH-${python_version}:PYTHONPATH" \
+    python setup.py install --skip-build \
+                            --cpp_implementation \
+                            --optimize=1 \
+                            --root="$pkgdir"
+  )
+  # install licence
+  install -Dm644 "${srcdir}"/protobuf/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
