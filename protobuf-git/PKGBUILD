@@ -28,7 +28,7 @@ fi
 
 pkgbase=protobuf-git
 pkgname=('protobuf-git' 'python-protobuf-git')
-pkgver=3.15.8
+pkgver=3.17
 pkgrel=1
 arch=('x86_64')
 url='https://developers.google.com/protocol-buffers/'
@@ -39,7 +39,7 @@ md5sums=('SKIP')
 
 pkgver(){
  cd protobuf
- echo 3.15.8.$(date -I | sed 's/-/_/' | sed 's/-/_/').$(git rev-list --count HEAD).$(git rev-parse --short HEAD)
+ echo 3.17.8.$(date -I | sed 's/-/_/' | sed 's/-/_/').$(git rev-list --count HEAD).$(git rev-parse --short HEAD)
 }
 
 build() {
