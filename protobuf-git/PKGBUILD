@@ -28,7 +28,7 @@ fi
 
 pkgbase=protobuf-git
 pkgname=('protobuf-git' 'python-protobuf-git')
-pkgver=3.17
+pkgver=3.17.3
 pkgrel=1
 arch=('x86_64')
 url='https://developers.google.com/protocol-buffers/'

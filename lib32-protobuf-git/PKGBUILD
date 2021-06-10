@@ -27,7 +27,7 @@ fi
 #######################################
 
 pkgname=lib32-protobuf-git
-pkgver=3.17
+pkgver=3.17.3
 pkgrel=1
 arch=('i686' 'x86_64')
 url='https://developers.google.com/protocol-buffers/'
